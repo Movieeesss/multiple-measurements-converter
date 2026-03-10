@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './style.css';
-import { StructuralMeasurementsConverter } from './StructuralMeasurementsConverter';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { StructuralConverter } from './StructuralConverter' // Updated named import
+import './index.css'
 
-ReactDOM.createRoot(document.getElementById('app') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <StructuralMeasurementsConverter />
+    <StructuralConverter />
   </React.StrictMode>,
-);
+)
