@@ -1,85 +1,27 @@
 import React, { useMemo, useState } from 'react';
 
-type UnitKey =
-  | 'mm'
-  | 'm'
-  | 'cm'
-  | 'inch'
-  | 'ft'
-  | 'yd'
-  | 'MPa'
-  | 'kg_cm2'
-  | 'kN_m2'
-  | 'psi'
-  | 'psf'
-  | 'kg'
-  | 'tonne'
-  | 'kN'
-  | 'lb'
-  | 'm3'
-  | 'ft3'
-  | 'L';
+type UnitKey = 'mm' | 'm' | 'cm' | 'inch' | 'ft' | 'MPa' | 'kg_cm2' | 'kN_m2' | 'psi' | 'psf' | 'kg' | 'tonne' | 'kN' | 'lb' | 'm3' | 'ft3' | 'L';
 
-type Unit = {
-  key: UnitKey;
-  label: string;
-  toBase: number;
-};
-
+type Unit = { key: UnitKey; label: string; toBase: number; };
 type UnitSetKey = 'length' | 'stress' | 'mass' | 'volume';
+type UnitSet = { key: UnitSetKey; title: string; units: Unit[]; };
 
-type UnitSet = {
-  key: UnitSetKey;
-  title: string;
-  units: Unit[];
-};
-
-// SET A: Length & Site Dimensions (base = meter)
 const lengthUnits: Unit[] = [
   { key: 'mm', label: 'mm', toBase: 0.001 },
   { key: 'cm', label: 'cm', toBase: 0.01 },
   { key: 'm', label: 'm', toBase: 1 },
   { key: 'inch', label: 'inch', toBase: 0.0254 },
   { key: 'ft', label: 'ft', toBase: 0.3048 },
-  // removed yard for cleaner length set
-];
-
-// SET B: Structural Force & Stress (base = MPa)
-const stressUnits: Unit[] = [
-  { key: 'MPa', label: 'MPa (N/mm²)', toBase: 1 },
-  { key: 'kg_cm2', label: 'kg/cm²', toBase: 0.0980665 },
-  { key: 'kN_m2', label: 'kN/m² (kPa)', toBase: 0.001 },
-  { key: 'psi', label: 'psi', toBase: 0.006894757293168 },
-  { key: 'psf', label: 'psf', toBase: 0.00004788025898 },
-];
-
-// SET C: Concrete & Steel Mass (base = kg)
-const massUnits: Unit[] = [
-  { key: 'kg', label: 'kg', toBase: 1 },
-  { key: 'tonne', label: 'Metric tonne', toBase: 1000 },
-  { key: 'kN', label: 'kN (weight)', toBase: 101.97162129779 },
-  { key: 'lb', label: 'lbs', toBase: 0.45359237 },
-];
-
-// SET D: Volume (base = m³)
-const volumeUnits: Unit[] = [
-  { key: 'm3', label: 'Cu.m (m³)', toBase: 1 },
-  { key: 'ft3', label: 'Cu.ft (CFT)', toBase: 0.028316846592 },
-  { key: 'L', label: 'Litres', toBase: 0.001 },
 ];
 
 const UNIT_SETS: UnitSet[] = [
-  {
-    key: 'length',
-    title: 'Length & Site Dimensions',
-    units: lengthUnits,
-  },
+  { key: 'length', title: 'Length & Site Dimensions', units: lengthUnits },
 ];
 
 const formatNumber = (value: number | null): string => {
   if (value === null || !Number.isFinite(value)) return '';
   return value.toLocaleString(undefined, {
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 3,
     minimumFractionDigits: 2,
   });
 };
@@ -90,312 +32,140 @@ const formatFeetInches = (meters: number | null): string => {
   const feet = Math.floor(totalFeet);
   let inches = Math.round((totalFeet - feet) * 12);
   let adjFeet = feet;
-  if (inches === 12) {
-    adjFeet += 1;
-    inches = 0;
-  }
+  if (inches === 12) { adjFeet += 1; inches = 0; }
   return `${adjFeet}' ${inches}"`;
 };
 
 export const StructuralMeasurementsConverter: React.FC = () => {
-  const [activeSetKey, setActiveSetKey] = useState<UnitSetKey>('length');
-  const [inputValue, setInputValue] = useState<string>('1');
+  const [inputValue, setInputValue] = useState<string>('1000');
   const [inputUnitKey, setInputUnitKey] = useState<UnitKey>('mm');
-  const [areaValue, setAreaValue] = useState<string>('1200');
-  const [areaFromUnit, setAreaFromUnit] = useState<'sqm' | 'sqft'>('sqft');
+  const [areaValue, setAreaValue] = useState<string>('100');
+  const [areaFromUnit, setAreaFromUnit] = useState<'sqm' | 'sqft'>('sqm');
 
-  const activeSet = useMemo(
-    () => UNIT_SETS.find((s) => s.key === activeSetKey)!,
-    [activeSetKey],
-  );
-
-  React.useEffect(() => {
-    if (!activeSet.units.some((u) => u.key === inputUnitKey)) {
-      setInputUnitKey(activeSet.units[0].key);
-    }
-  }, [activeSet, inputUnitKey]);
+  const activeSet = UNIT_SETS[0];
 
   const { conversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
-    if (Number.isNaN(numeric)) {
-      return {
-        baseMeters: null as number | null,
-        conversions: activeSet.units.map((u) => ({
-          unit: u,
-          value: null as number | null,
-        })),
-      };
-    }
-
+    if (Number.isNaN(numeric)) return { baseMeters: null, conversions: activeSet.units.map(u => ({ unit: u, value: null })) };
     const fromUnit = activeSet.units.find((u) => u.key === inputUnitKey)!;
     const baseValue = numeric * fromUnit.toBase;
-
     return {
-      baseMeters: activeSet.key === 'length' ? baseValue : null,
-      conversions: activeSet.units.map((unit) => ({
-        unit,
-        value: baseValue / unit.toBase,
-      })),
+      baseMeters: baseValue,
+      conversions: activeSet.units.map((unit) => ({ unit, value: baseValue / unit.toBase }))
     };
-  }, [activeSet, inputUnitKey, inputValue]);
+  }, [inputUnitKey, inputValue]);
 
   const areaConversions = useMemo(() => {
     const numeric = parseFloat(areaValue);
-    if (Number.isNaN(numeric)) {
-      return { sqm: null as number | null, sqft: null as number | null };
-    }
-
-    // Use factor 10.76 as per your Excel example
-    const factor = 10.76;
-    if (areaFromUnit === 'sqm') {
-      const sqm = numeric;
-      const sqft = numeric * factor;
-      return { sqm, sqft };
-    }
-    const sqft = numeric;
-    const sqm = numeric / factor;
-    return { sqm, sqft };
+    if (Number.isNaN(numeric)) return { sqm: null, sqft: null };
+    const factor = 10.7639; // More precise factor for structural use
+    return areaFromUnit === 'sqm' 
+      ? { sqm: numeric, sqft: numeric * factor } 
+      : { sqm: numeric / factor, sqft: numeric };
   }, [areaValue, areaFromUnit]);
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-start justify-center py-10">
-      <div className="w-full max-w-5xl mx-auto px-4">
-        <div className="bg-white/90 backdrop-blur border border-slate-200 rounded-3xl shadow-xl shadow-slate-200">
-          <div className="border-b border-slate-200 px-6 pt-5 pb-4 flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-                Multiple Measurements Converter
-              </h1>
-              <p className="mt-1 text-xs sm:text-sm text-slate-500">
-                MMC · Fast, accurate structural length & area conversions.
-              </p>
+    <div className="min-h-screen bg-slate-50 flex items-start justify-center py-6 px-4 font-sans">
+      <div className="w-full max-w-4xl space-y-4">
+        
+        {/* HEADER */}
+        <div className="bg-slate-900 rounded-2xl p-6 shadow-lg border-b-4 border-blue-500">
+          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
+            <span className="bg-blue-500 p-1 rounded">🏗️</span> 
+            STRUCTURAL CONVERTER
+          </h1>
+          <p className="text-slate-400 text-xs font-bold uppercase mt-1 tracking-widest">Precision Engineering Tool</p>
+        </div>
+
+        {/* INPUT BOX - BLUE THEME */}
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-4 w-1 bg-blue-600 rounded-full"></div>
+            <h2 className="text-sm font-black text-slate-800 uppercase">Input Measurement</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="relative">
+              <input
+                type="number"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                className="w-full bg-blue-50 border-2 border-blue-200 rounded-xl px-4 py-3 text-lg font-bold text-blue-900 focus:border-blue-500 outline-none transition-all shadow-inner"
+                placeholder="0.00"
+              />
+              <span className="absolute right-4 top-1 text-[10px] font-bold text-blue-400 uppercase">Value</span>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="inline-flex h-6 items-center rounded-full border border-slate-200 px-3 bg-slate-50">
-                Length focus
+            <select
+              value={inputUnitKey}
+              onChange={(e) => setInputUnitKey(e.target.value as UnitKey)}
+              className="w-full bg-slate-100 border-2 border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-blue-500 appearance-none"
+            >
+              {activeSet.units.map((u) => <option key={u.key} value={u.key}>{u.label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* LENGTH OUTPUTS - GREEN THEME */}
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-1 bg-emerald-500 rounded-full"></div>
+              <h2 className="text-sm font-black text-slate-800 uppercase">Metric & Imperial Length</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {conversions.map(({ unit, value }) => (
+              <div key={unit.key} className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex flex-col">
+                <span className="text-[10px] font-black text-emerald-600 uppercase mb-1">{unit.label}</span>
+                <span className="text-lg font-bold text-emerald-900 font-mono tracking-tight">
+                  {formatNumber(value)}
+                </span>
+              </div>
+            ))}
+            {/* SPECIAL FORMATTED BOX - AMBER THEME */}
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3 flex flex-col col-span-2 sm:col-span-1 shadow-sm">
+              <span className="text-[10px] font-black text-amber-600 uppercase mb-1">Feet & Inches</span>
+              <span className="text-lg font-black text-amber-900">
+                {formatFeetInches(baseMeters)}
               </span>
             </div>
           </div>
+        </div>
 
-          <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/70">
-            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)] gap-3 sm:gap-4 items-end">
-              <div className="flex flex-col">
-                <label
-                  htmlFor="struct-input-value"
-                  className="text-xs font-medium text-gray-700 mb-1"
-                >
-                  Input value
-                </label>
-                <input
-                  id="struct-input-value"
-                  type="number"
-                  inputMode="decimal"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 outline-none"
-                  placeholder="Enter value"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <label
-                  htmlFor="struct-input-unit"
-                  className="text-xs font-medium text-gray-700 mb-1"
-                >
-                  From unit
-                </label>
-                <div className="relative">
-                  <select
-                    id="struct-input-unit"
-                    value={inputUnitKey}
-                    onChange={(e) => setInputUnitKey(e.target.value as UnitKey)}
-                    className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 outline-none appearance-none"
-                  >
-                    {activeSet.units.map((unit) => (
-                      <option key={unit.key} value={unit.key}>
-                        {unit.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                    <svg
-                      className="h-4 w-4 text-gray-400"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                    >
-                      <path
-                        d="M6 8l4 4 4-4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
+        {/* AREA CONVERTER - PURPLE THEME */}
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-200">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-1 bg-purple-600 rounded-full"></div>
+              <h2 className="text-sm font-black text-slate-800 uppercase">Area (Civil/Site)</h2>
             </div>
           </div>
-
-          <div className="px-6 py-5 space-y-6">
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                  Length outputs
-                </p>
-                <p className="text-[11px] text-slate-400">Updates while you type.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {conversions
-                  .filter(({ unit }) => ['mm', 'm', 'ft'].includes(unit.key))
-                  .map(({ unit, value }) => (
-                    <div
-                      key={unit.key}
-                      className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
-                    >
-                      <span className="text-xs font-medium text-slate-700 mb-1.5">
-                        {unit.label}
-                      </span>
-                      <input
-                        type="text"
-                        readOnly
-                        value={formatNumber(value)}
-                        className="block w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 shadow-inner focus:outline-none cursor-default"
-                      />
-                    </div>
-                  ))}
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {conversions
-                  .filter(({ unit }) => ['inch', 'cm'].includes(unit.key))
-                  .map(({ unit, value }) => (
-                    <div
-                      key={unit.key}
-                      className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
-                    >
-                      <span className="text-xs font-medium text-slate-700 mb-1.5">
-                        {unit.label}
-                      </span>
-                      <input
-                        type="text"
-                        readOnly
-                        value={formatNumber(value)}
-                        className="block w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 shadow-inner focus:outline-none cursor-default"
-                      />
-                    </div>
-                  ))}
-                <div className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                  <span className="text-xs font-medium text-slate-700 mb-1.5">
-                    Ft &amp; Inch (formatted)
-                  </span>
-                  <input
-                    type="text"
-                    readOnly
-                    value={formatFeetInches(baseMeters)}
-                    className="block w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 shadow-inner focus:outline-none cursor-default"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-dashed border-slate-200 pt-4">
-              <div className="mb-3 flex items-center justify-between">
-                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-                  Area converter (sq.m ↔ sq.ft)
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Uses factor 1 m² = 10.76 ft².
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)] gap-3 sm:gap-4 items-end mb-3">
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="area-input"
-                    className="text-xs font-medium text-slate-700 mb-1"
-                  >
-                    Area value
-                  </label>
-                  <input
-                    id="area-input"
-                    type="number"
-                    inputMode="decimal"
-                    value={areaValue}
-                    onChange={(e) => setAreaValue(e.target.value)}
-                    className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 outline-none"
-                    placeholder="Enter area"
-                  />
-                </div>
-
-                <div className="flex flex-col">
-                  <label
-                    htmlFor="area-from-unit"
-                    className="text-xs font-medium text-slate-700 mb-1"
-                  >
-                    From unit
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="area-from-unit"
-                      value={areaFromUnit}
-                      onChange={(e) =>
-                        setAreaFromUnit(e.target.value as 'sqm' | 'sqft')
-                      }
-                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 outline-none appearance-none"
-                    >
-                      <option value="sqm">sq.m</option>
-                      <option value="sqft">sq.ft</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                      <svg
-                        className="h-4 w-4 text-slate-400"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <path
-                          d="M6 8l4 4 4-4"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                  <span className="text-xs font-medium text-slate-700 mb-1.5">
-                    sq.m
-                  </span>
-                  <input
-                    type="text"
-                    readOnly
-                    value={formatNumber(areaConversions.sqm)}
-                    className="block w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 shadow-inner focus:outline-none cursor-default"
-                  />
-                </div>
-                <div className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                  <span className="text-xs font-medium text-slate-700 mb-1.5">
-                    sq.ft
-                  </span>
-                  <input
-                    type="text"
-                    readOnly
-                    value={formatNumber(areaConversions.sqft)}
-                    className="block w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs sm:text-sm text-slate-900 shadow-inner focus:outline-none cursor-default"
-                  />
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <input
+              type="number"
+              value={areaValue}
+              onChange={(e) => setAreaValue(e.target.value)}
+              className="bg-purple-50 border-2 border-purple-100 rounded-xl px-4 py-2 font-bold text-purple-900 outline-none focus:border-purple-500"
+            />
+            <select
+              value={areaFromUnit}
+              onChange={(e) => setAreaFromUnit(e.target.value as any)}
+              className="bg-slate-100 border-2 border-slate-200 rounded-xl px-4 py-2 font-bold text-slate-700 outline-none"
+            >
+              <option value="sqm">SQUARE METER (m²)</option>
+              <option value="sqft">SQUARE FEET (ft²)</option>
+            </select>
+            <div className="flex items-center justify-center bg-purple-600 rounded-xl px-4 py-2 text-white font-black text-sm shadow-md">
+              {areaFromUnit === 'sqm' ? `${formatNumber(areaConversions.sqft)} ft²` : `${formatNumber(areaConversions.sqm)} m²`}
             </div>
           </div>
         </div>
+
+        {/* FOOTER FOOTNOTE */}
+        <div className="text-center">
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Standard structural conversion factors applied</p>
+        </div>
+
       </div>
     </div>
   );
 };
-
