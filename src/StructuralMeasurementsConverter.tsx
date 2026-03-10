@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 
-export const StructuralConverter = () => {
+// Using Named Export to solve TS2614 build error
+export const StructuralMeasurementsConverter = () => {
   const [inputValue, setInputValue] = useState('1000');
   const [inputUnitKey, setInputUnitKey] = useState('mm');
   const [areaValue, setAreaValue] = useState('1200');
@@ -32,7 +33,7 @@ export const StructuralConverter = () => {
     return `${adjFeet}' ${inches}"`;
   };
 
-  // Fixed Logic: This recalculates all length conversions whenever inputValue or unit changes
+  // Logic: Recalculates all units whenever input or unit changes
   const { conversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
     if (isNaN(numeric)) return { baseMeters: 0, conversions: lengthUnits.map(u => ({ unit: u, value: 0 })) };
@@ -63,9 +64,9 @@ export const StructuralConverter = () => {
   return (
     <div style={containerStyle}>
       
-      {/* HEADER - Renamed */}
+      {/* HEADER - Renamed to MMC TOOL */}
       <div style={{ backgroundColor: '#1a2233', color: '#fff', padding: '24px 10px', borderRadius: '20px', marginBottom: '16px', textAlign: 'center', borderBottom: '4px solid #3b82f6' }}>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '900', letterSpacing: '0.5px' }}>STRUCTURAL CONVERTER</h1>
+        <h1 style={{ margin: 0, fontSize: '26px', fontWeight: '900', letterSpacing: '1px' }}>MMC TOOL</h1>
         <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '3px 12px', borderRadius: '6px', marginTop: '10px' }}>
           <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '1px' }}>PRECISION ENGINEERING</span>
         </div>
@@ -124,12 +125,12 @@ export const StructuralConverter = () => {
         <div style={{ backgroundColor: '#8b5cf6', color: '#fff', padding: '18px', borderRadius: '12px', textAlign: 'center' }}>
           <span style={{ fontSize: '10px', fontWeight: '800', display: 'block', opacity: 0.8, marginBottom: '2px' }}>CONVERTED AREA</span>
           <div style={{ fontSize: '22px', fontWeight: '900' }}>
-            {formatNumber(parseFloat(areaResultValue))} {areaFromUnit === 'sqm' ? 'ft²' : 'm²'}
+            {areaResultValue} {areaFromUnit === 'sqm' ? 'ft²' : 'm²'}
           </div>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', marginTop: '10px' }}>
+      <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', marginTop: '10px', paddingBottom: '20px' }}>
         STANDARD STRUCTURAL CONVERSION FACTORS APPLIED
       </div>
 
@@ -137,4 +138,4 @@ export const StructuralConverter = () => {
   );
 };
 
-export default StructuralConverter;
+export default StructuralMeasurementsConverter;
