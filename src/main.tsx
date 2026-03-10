@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { StructuralConverter } from './Structural-Measurements-Converter' // Updated named import
+import { StructuralConverter } from './StructuralConverter' 
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -8,6 +8,3 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <StructuralConverter />
   </React.StrictMode>,
 )
-
-
-
