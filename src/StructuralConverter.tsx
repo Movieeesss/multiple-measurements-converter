@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 
-// NAMED EXPORT for main.tsx
+// NAMED EXPORT: This must match the name used in main.tsx
 export const StructuralConverter = () => {
   const [inputValue, setInputValue] = useState('1000');
   const [inputUnitKey, setInputUnitKey] = useState('mm');
@@ -33,7 +33,7 @@ export const StructuralConverter = () => {
     return `${adjFeet}' ${inches}"`;
   };
 
-  // LOGIC: Filter out the input unit from the conversions list to avoid repetition
+  // LOGIC: Recalculate and filter current input to avoid repetition
   const { filteredConversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
     if (isNaN(numeric)) return { baseMeters: 0, filteredConversions: [] };
@@ -41,7 +41,6 @@ export const StructuralConverter = () => {
     const fromUnit = lengthUnits.find((u) => u.key === inputUnitKey);
     const baseValueInMeters = numeric * fromUnit.toBase;
 
-    // We filter out the unit currently selected in the input select box
     const filtered = lengthUnits
       .filter(unit => unit.key !== inputUnitKey)
       .map((unit) => ({
@@ -59,22 +58,22 @@ export const StructuralConverter = () => {
     return areaFromUnit === 'sqm' ? (numeric * factor).toFixed(2) : (numeric / factor).toFixed(2);
   }, [areaValue, areaFromUnit]);
 
-  // STYLES
+  // INLINE STYLING for stability
   const containerStyle = { minHeight: '100vh', backgroundColor: '#fcfcfc', padding: '12px', fontFamily: 'sans-serif' };
   const cardStyle = { backgroundColor: '#ffffff', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' };
   
   return (
     <div style={containerStyle}>
       
-      {/* MMC TOOL HEADER */}
+      {/* HEADER */}
       <div style={{ backgroundColor: '#1a2233', color: '#fff', padding: '20px 10px', borderRadius: '20px', marginBottom: '16px', textAlign: 'center', borderBottom: '4px solid #3b82f6' }}>
         <h1 style={{ margin: 0, fontSize: '26px', fontWeight: '900', letterSpacing: '1px' }}>MMC TOOL</h1>
-        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '2px 10px', borderRadius: '6px', marginTop: '8px' }}>
+        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '2px 10px', borderRadius: '4px', marginTop: '8px' }}>
           <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '1px' }}>PRECISION ENGINEERING</span>
         </div>
       </div>
 
-      {/* INPUT SECTION - BLUE */}
+      {/* INPUTS - BLUE */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #3b82f6' }}>
         <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '8px', display: 'block' }}>INPUT MEASUREMENT</span>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -101,7 +100,6 @@ export const StructuralConverter = () => {
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#064e3b' }}>{formatNumber(value)}</div>
             </div>
           ))}
-          {/* FEET & INCHES - GOLD */}
           <div style={{ gridColumn: 'span 2', backgroundColor: '#fffbeb', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #fef3c7', marginTop: '5px' }}>
             <span style={{ fontSize: '10px', fontWeight: '900', color: '#92400e' }}>IMPERIAL FORMAT (FT & IN)</span>
             <div style={{ fontSize: '26px', fontWeight: '900', color: '#78350f', marginTop: '4px' }}>{formatFeetInches(baseMeters)}</div>
@@ -109,7 +107,7 @@ export const StructuralConverter = () => {
         </div>
       </div>
 
-      {/* AREA SECTION - PURPLE */}
+      {/* AREA - PURPLE */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #8b5cf6' }}>
         <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '12px', display: 'block' }}>AREA (CIVIL/SITE)</span>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
@@ -132,13 +130,10 @@ export const StructuralConverter = () => {
           </div>
         </div>
       </div>
-
-      <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', marginTop: '10px', paddingBottom: '30px' }}>
+      
+      <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', paddingBottom: '30px' }}>
         STANDARD STRUCTURAL CONVERSION FACTORS APPLIED
       </div>
-
     </div>
   );
 };
-
-export default StructuralConverter;
