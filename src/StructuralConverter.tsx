@@ -32,13 +32,13 @@ export const StructuralConverter = () => {
     return `${adjFeet}' ${inches}"`;
   };
 
-  // Logic: Filters out the selected input unit to prevent repeat showing
+  // LOGIC: Filters out the selected input unit to prevent repeat showing
   const { filteredConversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
     if (isNaN(numeric)) return { baseMeters: 0, filteredConversions: [] };
     
     const fromUnit = lengthUnits.find((u) => u.key === inputUnitKey);
-    const baseValueInMeters = numeric * fromUnit.toBase;
+    const baseValueInMeters = numeric * (fromUnit?.toBase || 0);
 
     const filtered = lengthUnits
       .filter(unit => unit.key !== inputUnitKey)
