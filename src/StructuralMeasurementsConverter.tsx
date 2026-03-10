@@ -1,18 +1,17 @@
 import React, { useMemo, useState } from 'react';
 
-// Using a named export to match your main.tsx import requirement
-export const StructuralMeasurementsConverter = () => {
+export const StructuralConverter = () => {
   const [inputValue, setInputValue] = useState('1000');
   const [inputUnitKey, setInputUnitKey] = useState('mm');
-  const [areaValue, setAreaValue] = useState('100');
-  const [areaFromUnit, setAreaFromUnit] = useState('sqm');
+  const [areaValue, setAreaValue] = useState('1200');
+  const [areaFromUnit, setAreaFromUnit] = useState('sqft');
 
   const lengthUnits = [
-    { key: 'mm', label: 'mm', toBase: 0.001 },
-    { key: 'cm', label: 'cm', toBase: 0.01 },
-    { key: 'm', label: 'm', toBase: 1 },
-    { key: 'inch', label: 'inch', toBase: 0.0254 },
-    { key: 'ft', label: 'ft', toBase: 0.3048 },
+    { key: 'mm', label: 'MM', toBase: 0.001 },
+    { key: 'cm', label: 'CM', toBase: 0.01 },
+    { key: 'm', label: 'M', toBase: 1 },
+    { key: 'inch', label: 'INCH', toBase: 0.0254 },
+    { key: 'ft', label: 'FT', toBase: 0.3048 },
   ];
 
   const formatNumber = (value) => {
@@ -33,16 +32,22 @@ export const StructuralMeasurementsConverter = () => {
     return `${adjFeet}' ${inches}"`;
   };
 
+  // Fixed Logic: This recalculates all length conversions whenever inputValue or unit changes
   const { conversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
     if (isNaN(numeric)) return { baseMeters: 0, conversions: lengthUnits.map(u => ({ unit: u, value: 0 })) };
+    
     const fromUnit = lengthUnits.find((u) => u.key === inputUnitKey);
-    const baseValue = numeric * fromUnit.toBase;
+    const baseValueInMeters = numeric * fromUnit.toBase;
+
     return {
-      baseMeters: baseValue,
-      conversions: lengthUnits.map((unit) => ({ unit, value: baseValue / unit.toBase }))
+      baseMeters: baseValueInMeters,
+      conversions: lengthUnits.map((unit) => ({
+        unit,
+        value: baseValueInMeters / unit.toBase
+      }))
     };
-  }, [inputUnitKey, inputValue]);
+  }, [inputValue, inputUnitKey]);
 
   const areaResultValue = useMemo(() => {
     const numeric = parseFloat(areaValue);
@@ -51,95 +56,85 @@ export const StructuralMeasurementsConverter = () => {
     return areaFromUnit === 'sqm' ? (numeric * factor).toFixed(2) : (numeric / factor).toFixed(2);
   }, [areaValue, areaFromUnit]);
 
-  // STYLING OBJECTS
-  const containerStyle = { minHeight: '100vh', backgroundColor: '#f8fafc', padding: '15px', fontFamily: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif' };
-  const cardStyle = { backgroundColor: '#ffffff', borderRadius: '16px', padding: '18px', marginBottom: '16px', border: '1px solid #e2e8f0', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.05)' };
-  const labelStyle = { fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '6px', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' };
-  const inputStyle = { width: '100%', padding: '12px', fontSize: '20px', fontWeight: '700', borderRadius: '10px', border: '2px solid #e2e8f0', outline: 'none', boxSizing: 'border-box' };
+  // STYLING
+  const containerStyle = { minHeight: '100vh', backgroundColor: '#fcfcfc', padding: '12px', fontFamily: 'sans-serif' };
+  const cardStyle = { backgroundColor: '#ffffff', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid #f0f0f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' };
   
   return (
     <div style={containerStyle}>
       
-      {/* PROFESSIONAL HEADER */}
-      <div style={{ backgroundColor: '#1e293b', color: '#fff', padding: '24px 15px', borderRadius: '16px', marginBottom: '16px', textAlign: 'center', borderBottom: '5px solid #3b82f6' }}>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '900', letterSpacing: '-0.5px' }}>STRUCTURAL CONVERTER</h1>
-        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '2px 10px', borderRadius: '4px', marginTop: '8px' }}>
+      {/* HEADER - Renamed */}
+      <div style={{ backgroundColor: '#1a2233', color: '#fff', padding: '24px 10px', borderRadius: '20px', marginBottom: '16px', textAlign: 'center', borderBottom: '4px solid #3b82f6' }}>
+        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '900', letterSpacing: '0.5px' }}>STRUCTURAL CONVERTER</h1>
+        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '3px 12px', borderRadius: '6px', marginTop: '10px' }}>
           <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '1px' }}>PRECISION ENGINEERING</span>
         </div>
       </div>
 
-      {/* INPUT - BLUE THEME */}
+      {/* INPUT MEASUREMENT */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #3b82f6' }}>
-        <span style={labelStyle}>Input Measurement</span>
+        <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '8px', display: 'block' }}>INPUT MEASUREMENT</span>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ flex: 2 }}>
-            <input 
-              type="number" value={inputValue} onChange={(e) => setInputValue(e.target.value)} 
-              style={{ ...inputStyle, backgroundColor: '#f0f7ff', borderColor: '#3b82f6' }}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <select 
-              value={inputUnitKey} onChange={(e) => setInputUnitKey(e.target.value)}
-              style={{ ...inputStyle, fontSize: '16px', backgroundColor: '#fff', cursor: 'pointer' }}
-            >
-              {lengthUnits.map(u => <option key={u.key} value={u.key}>{u.label}</option>)}
-            </select>
-          </div>
+          <input 
+            type="number" value={inputValue} onChange={(e) => setInputValue(e.target.value)} 
+            style={{ flex: 1, padding: '14px', fontSize: '20px', fontWeight: '700', borderRadius: '12px', border: '2px solid #3b82f6', outline: 'none' }}
+          />
+          <select 
+            value={inputUnitKey} onChange={(e) => setInputUnitKey(e.target.value)}
+            style={{ width: '100px', padding: '14px', fontSize: '16px', fontWeight: '700', borderRadius: '12px', border: '1px solid #e2e8f0', backgroundColor: '#fff' }}
+          >
+            {lengthUnits.map(u => <option key={u.key} value={u.key}>{u.key}</option>)}
+          </select>
         </div>
       </div>
 
-      {/* OUTPUTS - GREEN THEME */}
+      {/* LENGTH CONVERSIONS - GREEN THEME */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #10b981' }}>
-        <span style={labelStyle}>Length Conversions</span>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
+        <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '12px', display: 'block' }}>LENGTH CONVERSIONS</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
           {conversions.map(({ unit, value }) => (
-            <div key={unit.key} style={{ backgroundColor: '#f0fdf4', border: '1px solid #bcf0da', padding: '12px', borderRadius: '10px' }}>
-              <span style={{ fontSize: '10px', fontWeight: '900', color: '#059669' }}>{unit.label.toUpperCase()}</span>
+            <div key={unit.key} style={{ backgroundColor: '#f0fdf4', padding: '12px', borderRadius: '12px', border: '1px solid #dcfce7' }}>
+              <span style={{ fontSize: '10px', fontWeight: '900', color: '#059669' }}>{unit.label}</span>
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#064e3b' }}>{formatNumber(value)}</div>
             </div>
           ))}
-          {/* SPECIAL FORMATTED BOX - ORANGE/GOLD THEME */}
-          <div style={{ gridColumn: 'span 2', backgroundColor: '#fffbeb', border: '2px solid #fde68a', padding: '15px', borderRadius: '10px', textAlign: 'center' }}>
-            <span style={{ fontSize: '10px', fontWeight: '900', color: '#d97706' }}>IMPERIAL FORMAT (FT & IN)</span>
+          <div style={{ gridColumn: 'span 2', backgroundColor: '#fffbeb', padding: '16px', borderRadius: '12px', textAlign: 'center', border: '1px solid #fef3c7' }}>
+            <span style={{ fontSize: '10px', fontWeight: '900', color: '#92400e' }}>IMPERIAL FORMAT (FT & IN)</span>
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#78350f', marginTop: '4px' }}>{formatFeetInches(baseMeters)}</div>
           </div>
         </div>
       </div>
 
-      {/* AREA - PURPLE THEME */}
+      {/* AREA CONVERSION - PURPLE THEME */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #8b5cf6' }}>
-        <span style={labelStyle}>Area (Civil/Site)</span>
+        <span style={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '12px', display: 'block' }}>AREA (CIVIL/SITE)</span>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
           <input 
             type="number" value={areaValue} onChange={(e) => setAreaValue(e.target.value)} 
-            style={{ ...inputStyle, flex: 2, fontSize: '18px' }}
+            style={{ flex: 1, padding: '12px', fontSize: '18px', fontWeight: '700', borderRadius: '12px', border: '1px solid #e2e8f0' }}
           />
           <select 
             value={areaFromUnit} onChange={(e) => setAreaFromUnit(e.target.value)}
-            style={{ ...inputStyle, flex: 1.5, fontSize: '14px' }}
+            style={{ width: '120px', padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0' }}
           >
             <option value="sqm">Sq.m (m²)</option>
             <option value="sqft">Sq.ft (ft²)</option>
           </select>
         </div>
-        <div style={{ backgroundColor: '#8b5cf6', color: '#fff', padding: '16px', borderRadius: '10px', textAlign: 'center' }}>
-          <span style={{ fontSize: '10px', fontWeight: '800', opacity: 0.9, display: 'block', marginBottom: '2px' }}>CONVERTED AREA</span>
+        <div style={{ backgroundColor: '#8b5cf6', color: '#fff', padding: '18px', borderRadius: '12px', textAlign: 'center' }}>
+          <span style={{ fontSize: '10px', fontWeight: '800', display: 'block', opacity: 0.8, marginBottom: '2px' }}>CONVERTED AREA</span>
           <div style={{ fontSize: '22px', fontWeight: '900' }}>
-            {areaResultValue} {areaFromUnit === 'sqm' ? 'ft²' : 'm²'}
+            {formatNumber(parseFloat(areaResultValue))} {areaFromUnit === 'sqm' ? 'ft²' : 'm²'}
           </div>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', paddingBottom: '20px' }}>
-        <p style={{ fontSize: '10px', fontWeight: '800', color: '#94a3b8', letterSpacing: '1px' }}>
-          1 m² = 10.7639 ft² · CONSTANT FACTORS APPLIED
-        </p>
+      <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', marginTop: '10px' }}>
+        STANDARD STRUCTURAL CONVERSION FACTORS APPLIED
       </div>
 
     </div>
   );
 };
 
-// Also providing default export for flexibility
-export default StructuralMeasurementsConverter;
+export default StructuralConverter;
