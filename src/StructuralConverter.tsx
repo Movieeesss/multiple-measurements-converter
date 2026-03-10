@@ -32,7 +32,7 @@ export const StructuralConverter = () => {
     return `${adjFeet}' ${inches}"`;
   };
 
-  // LOGIC: Filters out the selected input unit to prevent repeat showing
+  // LOGIC: Recalculate and filter out the current input unit
   const { filteredConversions, baseMeters } = useMemo(() => {
     const numeric = parseFloat(inputValue);
     if (isNaN(numeric)) return { baseMeters: 0, filteredConversions: [] };
@@ -57,22 +57,22 @@ export const StructuralConverter = () => {
     return areaFromUnit === 'sqm' ? (numeric * factor).toFixed(2) : (numeric / factor).toFixed(2);
   }, [areaValue, areaFromUnit]);
 
-  // Styles
+  // STYLES
   const containerStyle = { minHeight: '100vh', backgroundColor: '#f8fafc', padding: '15px', fontFamily: 'sans-serif' };
-  const cardStyle = { backgroundColor: '#ffffff', borderRadius: '20px', padding: '18px', marginBottom: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' };
+  const cardStyle = { backgroundColor: '#ffffff', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' };
   
   return (
     <div style={containerStyle}>
       
-      {/* Header - MMC TOOL */}
+      {/* HEADER */}
       <div style={{ backgroundColor: '#1e293b', color: '#fff', padding: '20px 10px', borderRadius: '20px', marginBottom: '16px', textAlign: 'center', borderBottom: '4px solid #3b82f6' }}>
         <h1 style={{ margin: 0, fontSize: '26px', fontWeight: '900', letterSpacing: '1px' }}>MMC TOOL</h1>
-        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '2px 12px', borderRadius: '6px', marginTop: '8px' }}>
+        <div style={{ display: 'inline-block', backgroundColor: '#3b82f6', padding: '2px 12px', borderRadius: '4px', marginTop: '8px' }}>
           <span style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '1px' }}>PRECISION ENGINEERING</span>
         </div>
       </div>
 
-      {/* Input - Blue */}
+      {/* INPUTS - BLUE */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #3b82f6' }}>
         <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '8px', display: 'block' }}>INPUT MEASUREMENT</span>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -89,7 +89,7 @@ export const StructuralConverter = () => {
         </div>
       </div>
 
-      {/* Length Conversions - Green */}
+      {/* LENGTH CONVERSIONS - GREEN */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #10b981' }}>
         <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '12px', display: 'block' }}>LENGTH CONVERSIONS</span>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -99,7 +99,7 @@ export const StructuralConverter = () => {
               <div style={{ fontSize: '18px', fontWeight: '800', color: '#064e3b' }}>{formatNumber(value)}</div>
             </div>
           ))}
-          {/* Formatted Feet & Inch - Gold */}
+          {/* FEET & INCH DISPLAY - GOLD */}
           <div style={{ gridColumn: 'span 2', backgroundColor: '#fffbeb', padding: '18px', borderRadius: '15px', textAlign: 'center', border: '1px solid #fef3c7', marginTop: '5px' }}>
             <span style={{ fontSize: '10px', fontWeight: '900', color: '#92400e' }}>IMPERIAL FORMAT (FT & IN)</span>
             <div style={{ fontSize: '28px', fontWeight: '900', color: '#78350f', marginTop: '4px' }}>{formatFeetInches(baseMeters)}</div>
@@ -107,7 +107,7 @@ export const StructuralConverter = () => {
         </div>
       </div>
 
-      {/* Area - Purple */}
+      {/* AREA SECTION - PURPLE */}
       <div style={{ ...cardStyle, borderLeft: '8px solid #8b5cf6' }}>
         <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', marginBottom: '12px', display: 'block' }}>AREA (CIVIL/SITE)</span>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '12px' }}>
@@ -134,7 +134,6 @@ export const StructuralConverter = () => {
       <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: '700', paddingBottom: '30px' }}>
         STANDARD STRUCTURAL CONVERSION FACTORS APPLIED
       </div>
-
     </div>
   );
 };
